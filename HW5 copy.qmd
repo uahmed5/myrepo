@@ -1,0 +1,124 @@
+---
+title: "HW5 Instructions"
+author: "Data Science 2"
+editor: visual
+format:
+  html:
+    embed-resources: true
+    code-fold: true  # new
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r setup}
+#| echo: false
+library(tidyverse)
+library(tidytext)
+library(schrute)
+```
+
+# The Office
+
+Let's return to *The Office* and the question of how many times they said "that's what she said". Now we can use n-grams to help us with the searching. Recall that the text is in the [schrute](https://cran.r-project.org/web/packages/schrute/index.html) package on CRAN.
+
+Do the following: (please label each section with the same number as listed here)
+
+1.  Count the number of [lines]{.underline} in which "that's what she said" is said in *The Office* (yes, we discussed this previously)
+
+    ```{r}
+    twss_count <- theoffice %>%
+      mutate(text = str_to_lower(text)) %>%
+      filter(str_detect(text, "that's what she said"))
+    nrow(twss_count)
+    ```
+
+    There are 33 lines with it said.
+
+2.  Confirm that you get the same result when using `ngram4`, a variable which is an ngram of size 4 (4 words at a time).
+
+    ```{r}
+    ngram4 <- theoffice %>%
+      unnest_tokens(ngram4, text, 'ngrams', n=4, drop = FALSE) 
+      
+    ngram4 %>%
+      filter(ngram4 == "that's what she said") %>%
+      nrow()
+    ```
+
+    Got 35 occurrences while getting only 33 lines in 1 suggesting some repeating.
+
+3.  Explore whether "that's what she" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+    ```{r}
+    ngram4 %>%
+      filter(str_starts(ngram4, "that's what she")) %>%
+      distinct(ngram4) %>%
+      arrange(ngram4)
+    ```
+
+    The first two seam reasonable to add.
+
+4.  Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+    ```{r}
+    ngram4 %>%
+      filter(str_detect(ngram4, "what she said")) %>%
+      distinct(ngram4) %>%
+      arrange(ngram4)
+    ```
+
+    Nothing here of note.
+
+5.  Print all the [unique]{.underline} lines that contain the words "that", "what", "she" and "said", but do NOT contain the string "that's what she said". Decide whether any of these lines should be included as saying "that's what she said".
+
+    ```{r}
+    theoffice %>%
+      mutate(text_lower = str_to_lower(text)) %>%
+      filter(
+        str_detect(text_lower, "that") &
+        str_detect(text_lower, "what") &
+        str_detect(text_lower, "she") &
+        str_detect(text_lower, "said") &
+        !str_detect(text_lower, "that's what she said")
+      ) %>%
+      distinct(text)
+    ```
+
+    Seem to be regular dialogue and nothing more so probably should not be included.
+
+6.  Create a frequency distribution of X, where X is determined from the third word in "that's what X said".
+
+    ```{r}
+    ngram4 %>%
+      separate(ngram4, into = c("word1", "word2", "word3", "word4"), sep = " ") %>%
+      filter(word1 == "that's" & word2 == "what" & word4 == "said") %>%
+      count(word3, sort = TRUE)
+    ```
+
+7.  Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
+
+    ```{r}
+    office2 <- theoffice %>%
+      mutate(text_lower = str_to_lower(text)) %>%
+      mutate(twss_category = case_when(
+        str_detect(text_lower, "that's what she said") ~ 1,
+        str_detect(text_lower, "that's what she") ~ 3, 
+        str_detect(text_lower, "what she said") ~ 4,
+        str_detect(text_lower, "that") &
+          str_detect(text_lower, "what") &
+          str_detect(text_lower, "she") &
+          str_detect(text_lower, "said") ~ 5,
+        str_detect(text_lower, "that's what he said") ~ 6, 
+        TRUE ~ 0
+      )
+      )
+    ```
+
+8.  Create a frequency distribution of the new variable you created in part 7.
+
+    ```{r}
+    office2 %>%
+      count(twss_category, sort = TRUE)
+    ```
