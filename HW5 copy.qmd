@@ -1,11 +1,11 @@
 ---
-title: "HW5 Instructions"
-author: "Data Science 2"
+title: "HW5"
+author: "Uzair Ahmed"
 editor: visual
 format:
   html:
     embed-resources: true
-    code-fold: true  # new
+    code-fold: true  
 execute:
   echo: true
   message: false
