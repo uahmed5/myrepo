@@ -36,8 +36,6 @@ Do the following: (please label each section with the same number as listed here
 
     There are 33 lines with it said.
 
-    **\[WP\]:** Nice approach! I think the count should be 35 though — could be a curly vs straight apostrophe thing throwing off the match.
-
 2.  Confirm that you get the same result when using `ngram4`, a variable which is an ngram of size 4 (4 words at a time).
 
     ```{r}
@@ -60,15 +58,13 @@ Do the following: (please label each section with the same number as listed here
       arrange(ngram4)
     ```
 
-    The first two seam reasonable to add.
-
-    **\[WP\]:** Small typo — "seam" → "seem." Might be worth naming the specific phrases you'd add here (like "that's what she sai").
+    Thats what she a and thats what she sai seem reasonable to add given they seem to be a play on words on the running joke.
 
 4.  Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
 
     ```{r}
     ngram4 %>%
-      filter(str_detect(ngram4, "what she said")) %>%
+      filter(str_ends(ngram4, "what she said")) %>%
       distinct(ngram4) %>%
       arrange(ngram4)
     ```
@@ -119,13 +115,9 @@ Do the following: (please label each section with the same number as listed here
       )
       )
 
-    # [WP Code Suggestion]: str_ends() instead of str_detect() in Part 4 would
-    # avoid also matching "that's what she said" lines you already counted
     ```
 
 8.  Create a frequency distribution of the new variable you created in part 7.
-
-    **\[WP\]:** Good call including "he" as code 6 — just add a quick note saying why you picked it (same joke, different pronoun).
 
     ```{r}
     office2 %>%
